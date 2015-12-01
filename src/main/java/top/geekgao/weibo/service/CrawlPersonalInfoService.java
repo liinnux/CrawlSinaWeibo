@@ -8,6 +8,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import top.geekgao.weibo.po.PersonalInfo;
+import top.geekgao.weibo.utils.CrawlUtils;
 
 import java.io.IOException;
 
@@ -29,24 +30,9 @@ public class CrawlPersonalInfoService {
     /**
      * 执行后立即开始抓取用户信息
      */
-    public void crawl() {
+    public void crawl() throws IOException {
         personalInfo = new PersonalInfo();
-        CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet getPersonalInfoJson = new HttpGet(url);
-        try {
-            CloseableHttpResponse response = client.execute(getPersonalInfoJson);
-            json = EntityUtils.toString(response.getEntity());
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                client.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        json = CrawlUtils.getHtml(url);
         analysis();
     }
 

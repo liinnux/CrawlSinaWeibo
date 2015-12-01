@@ -1,11 +1,6 @@
 package top.geekgao.weibo.crawl;
 
 import com.thoughtworks.xstream.XStream;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import top.geekgao.weibo.po.PersonalInfo;
 import top.geekgao.weibo.service.CrawlPersonalInfoService;
 import top.geekgao.weibo.utils.CrawlUtils;
@@ -32,16 +27,15 @@ public class CrawlPersonalInfo {
 
     public CrawlPersonalInfo(String id) throws IOException {
         this.id = id;
-        setOid();
+        oid = CrawlUtils.getOid(id);
         crawlService = new CrawlPersonalInfoService("http://api.weibo.cn/2/cardlist?uicode=10000011&featurecode=10000001&lcardid=more_web&c=android&i=faf3db9&s=ec4938f8&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=230283" + oid + "_-_INFO&uid=1769127312&v_f=2&v_p=25&from=1056095010&gsid=_2A257XvBeDeRxGedJ7VsQ8inPyj6IHXVWSgSWrDV6PUJbrdANLVf2kWqXUOhtuyQouzVv8ATwTRBWwvO4hQ..&imsi=460017076390273&lang=zh_CN&lfid=230283" + oid + "&skin=default&count=20&oldwm=19005_0019&containerid=230283" + oid + "_-_INFO&luicode=10000198&need_head_cards=1&sflag=1");
     }
 
     /**
      * 调用后开始抓取
      */
-    public void crawl() {
+    public void crawl() throws IOException {
         crawlService.crawl();
-
     }
 
     /**
@@ -74,19 +68,6 @@ public class CrawlPersonalInfo {
         BufferedWriter writer = new BufferedWriter(new FileWriter(path + id + ".xml"));
         writer.write(result);
         writer.close();
-    }
-
-    private void setOid() throws IOException {
-        CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet getOid = new HttpGet("http://weibo.cn/" + id);
-        try {
-            CloseableHttpResponse response = client.execute(getOid);
-            String html = EntityUtils.toString(response.getEntity());
-            oid = html.split("uid=")[1].split("&")[0];
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        client.close();
     }
 
     public void setId(String id) {
