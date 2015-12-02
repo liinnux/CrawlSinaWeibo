@@ -44,7 +44,15 @@ public class CrawlUtils {
 
     /**
      *
-     * @return 微博的抓取个数
+     * @return 需要抓取的微博页数
+     */
+    public static Integer getPageCount() {
+        return Integer.valueOf(properties.getProperty("PageCount"));
+    }
+
+    /**
+     *
+     * @return 每页微博的个数，搭配需要抓取的页面数量使用
      */
     public static Integer getBlogCount() {
         return Integer.valueOf(properties.getProperty("blogCount"));
@@ -93,6 +101,8 @@ public class CrawlUtils {
     public static String getHtml(String url) throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(url);
+        get.setHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
+        get.setHeader("Upgrade-Insecure-Requests","1");
         CloseableHttpResponse response = client.execute(get);
         String result = EntityUtils.toString(response.getEntity());
         client.close();
@@ -102,9 +112,18 @@ public class CrawlUtils {
     /**
      * 根据输入的用户id返回用户真实oid
      */
-    public static String getOid(String id) throws IOException {
-        String html;
-        html = getHtml("http://weibo.cn/" + id);
-        return html.split("uid=")[1].split("&")[0];
+    public static String getOid(String id)  {
+        System.out.println("获取用户真实id...");
+        String html = null;
+        try {
+            html = getHtml("http://weibo.cn/" + id).split("uid=")[1].split("&")[0];
+        } catch (IOException e) {
+            System.out.println("获取用户真实id出错!");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("获取用户真实id出错!");
+        }
+        System.out.println("用户真实id获取成功.");
+
+        return html;
     }
 }

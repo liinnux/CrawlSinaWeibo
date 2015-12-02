@@ -7,8 +7,8 @@ import java.util.List;
  */
 public class WeiboInfo {
     private String id;
-    private List<Integer> followingOids;
-    private List<Integer> followerOids;
+    private List<String> followingOids;
+    private List<String> followerOids;
     private List<Blog> blogs;
 
     public String getId() {
@@ -19,19 +19,19 @@ public class WeiboInfo {
         this.id = id;
     }
 
-    public List<Integer> getFollowingOids() {
+    public List<String> getFollowingOids() {
         return followingOids;
     }
 
-    public void setFollowingOids(List<Integer> followingOids) {
+    public void setFollowingOids(List<String> followingOids) {
         this.followingOids = followingOids;
     }
 
-    public List<Integer> getFollowerOids() {
+    public List<String> getFollowerOids() {
         return followerOids;
     }
 
-    public void setFollowerOids(List<Integer> followerOids) {
+    public void setFollowerOids(List<String> followerOids) {
         this.followerOids = followerOids;
     }
 

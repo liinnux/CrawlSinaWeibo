@@ -51,7 +51,7 @@ public class CrawlPersonalInfo {
      */
     public void write() throws IOException {
         if (crawlService == null) {
-            return;
+            throw new IllegalStateException("您可能没有先调用crawl()方法");
         }
 
         String path = CrawlUtils.getPersonalInfoPath();

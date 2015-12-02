@@ -1,21 +1,25 @@
 package top.geekgao.weibo.test;
 
-import top.geekgao.weibo.service.CrawlWeiboInfoService;
+import top.geekgao.weibo.crawl.CrawlWeiboInfo;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by geekgao on 15-11-30.
  */
 public class Main {
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String id = scanner.next();
 
         try {
-            CrawlWeiboInfoService service = new CrawlWeiboInfoService("3217179555");
-            List<String> result = service.getFowardingOids("3915361818719126");
-            System.out.println(result.size());
+            CrawlWeiboInfo crawl = new CrawlWeiboInfo(id);
+            crawl.crawl();
+            crawl.write();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
