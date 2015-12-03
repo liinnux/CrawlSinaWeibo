@@ -82,12 +82,14 @@ public class CrawlWeiboInfo {
 
         //等代所有线程任务结束
         long startTime = System.currentTimeMillis();
+        long lastTime = System.currentTimeMillis();
+
         while (true) {
             long endTime = System.currentTimeMillis();
             //定时输出正在抓取的状态信息
-            if (endTime - startTime >= 5000) {
-                System.out.println("等待抓取微博内容信息结束...");
-                startTime = System.currentTimeMillis();
+            if (endTime - lastTime >= 5000) {
+                System.out.println("已运行" + (endTime - startTime) / 1000 + "秒");
+                lastTime = System.currentTimeMillis();
             }
 
             if (executorService.isTerminated()) {
@@ -116,7 +118,7 @@ public class CrawlWeiboInfo {
         XStream xStream = new XStream();
         //重命名根节点
         xStream.alias("info",WeiboInfo.class);
-        xStream.alias("blog",Blog.class);
+        xStream.alias("blog", Blog.class);
         String result = xStream.toXML(getWeiboInfo());
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(path + id + ".xml"));

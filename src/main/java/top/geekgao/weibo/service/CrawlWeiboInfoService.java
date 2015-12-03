@@ -36,7 +36,13 @@ public class CrawlWeiboInfoService {
         String url = "http://api.weibo.cn/2/friendships/friends?trim_status=0&uicode=10000195&featurecode=10000001&c=android&i=7db11f3&s=ec4938f8&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&uid=" + oid + "&v_f=2&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&lang=zh_CN&lfid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&page=1&skin=default&sort=1&has_pages=1&count=" + followingCount + "&oldwm=19005_0019&luicode=10000198&has_top=0&has_relation=1&has_member=1&lastmblog=1&sflag=1";
         List<String> followings = new LinkedList<String>();
         //获得关注信息
-        String json = CrawlUtils.getHtml(url);
+        String json;
+        while (true) {
+            json = CrawlUtils.getHtml(url);
+            if (!json.contains("errmsg")) {
+                break;
+            }
+        }
 
         JSONObject rootJson = new JSONObject(json);
         JSONArray users = rootJson.getJSONArray("users");
@@ -62,7 +68,13 @@ public class CrawlWeiboInfoService {
         String url = "http://api.weibo.cn/2/friendships/followers?trim_status=0&uicode=10000081&featurecode=10000001&c=android&i=7db11f3&s=ec4938f8&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&uid=" + oid + "&v_f=2&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&lang=zh_CN&lfid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&page=1&skin=default&sort=3&has_pages=0&count=" + followersCount + "&oldwm=19005_0019&luicode=10000198&has_top=0&has_relation=1&has_member=1&lastmblog=1&sflag=1";
         List<String> followers = new LinkedList<String>();
         //获得粉丝信息
-        String json = CrawlUtils.getHtml(url);
+        String json;
+        while (true) {
+            json = CrawlUtils.getHtml(url);
+            if (!json.contains("errmsg")) {
+                break;
+            }
+        }
 
         JSONObject rootJson = new JSONObject(json);
         JSONArray users = rootJson.getJSONArray("users");
@@ -80,9 +92,8 @@ public class CrawlWeiboInfoService {
      * @return 微博内容集合
      */
     public List<Blog> crawlBlog() throws IOException {
-        System.out.println("抓取博文信息...");//todo 删除全部打印语句
+        System.out.println("抓取博文信息...");
         List<String> weiboContentJsons = getContentJsons();
-        System.out.println(1);
         List<Blog> blogs = new LinkedList<Blog>();
         //解析每一批微博
         for (String blogsJson:weiboContentJsons) {
@@ -100,13 +111,9 @@ public class CrawlWeiboInfoService {
                 //获得微博评论
                 List<Comment> comments = getComments(blogId);
                 //获得微博转发用户Oid
-                System.out.println(2);
                 List<String> fowardings = getFowardingOids(blogId);
-                System.out.println(3);
                 //获得微博赞的用户Oid
-                System.out.println(4);
                 List<String> likes = getLikeOids(blogId);
-                System.out.println(5);
 
                 Blog blog = new Blog();
                 blog.setContent(content);
@@ -151,6 +158,10 @@ public class CrawlWeiboInfoService {
         //每次抓blogCount条，抓pageCount次
         for (int i = 1;i <= pageCount;i++) {
             String weiboContentJson = CrawlUtils.getHtml("http://api.weibo.cn/2/cardlist?uicode=10000198&featurecode=10000001&c=android&i=7db11f3&s=ec4938f8&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&uid=1769127312&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&imsi=460017076390273&lang=zh_CN&page=" + i + "&skin=default&count=" + blogCount + "&oldwm=19005_0019&containerid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&luicode=10000001&need_head_cards=0&sflag=1");
+            if (weiboContentJson.contains("errmsg")) {
+                i--;
+                continue;
+            }
             result.add(weiboContentJson);
         }
 
@@ -204,8 +215,11 @@ public class CrawlWeiboInfoService {
         //每次200个，i代表抓取哪一页，每页有200项转发信息
         for (int i = 1;i <= forwardingCount / 200;i++) {
             String json = CrawlUtils.getHtml("http://api.weibo.cn/2/statuses/repost_timeline?source=7501641714&uicode=10000002&featurecode=10000001&lcardid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO_-_" + blogId + "&c=android&i=7db11f3&s=ec4938f8&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&lang=zh_CN&lfid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO&page=" + i + "&skin=default&count=200&oldwm=19005_0019&luicode=10000198&has_member=1&sflag=1");
+            if (json.contains("errmsg")) {
+                i--;
+                continue;
+            }
             forwardingJsons.add(json);
-            System.out.println("转发：" + json);//todo 待删
         }
 
         //解析每一各json
@@ -238,8 +252,11 @@ public class CrawlWeiboInfoService {
         //每次获取200个，i代表页数
         for (int i = 1; i <= likeCount / 200;i++) {
             String json = CrawlUtils.getHtml("http://api.weibo.cn/2/like/show?uicode=10000002&featurecode=10000001&lcardid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO_-_" + blogId + "&c=android&i=7db11f3&s=ec4938f8&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&lang=zh_CN&lfid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO&page=" + i + "&skin=default&type=0&count=200&oldwm=19005_0019&luicode=10000198&filter_by_author=0&filter_by_source=0&sflag=1");
+            if (json.contains("errmsg")) {
+                i--;
+                continue;
+            }
             likeJsons.add(json);
-            System.out.println("点赞：" + json);//todo 待删
         }
 
         //逐个分析每一批json串
