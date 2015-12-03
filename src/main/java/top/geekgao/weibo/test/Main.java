@@ -1,5 +1,6 @@
 package top.geekgao.weibo.test;
 
+import top.geekgao.weibo.crawl.CrawlPersonalInfo;
 import top.geekgao.weibo.crawl.CrawlWeiboInfo;
 
 import java.io.IOException;
@@ -14,9 +15,13 @@ public class Main {
         String id = scanner.next();
 
         try {
-            CrawlWeiboInfo crawl = new CrawlWeiboInfo(id);
-            crawl.crawl();
-            crawl.write();
+            CrawlWeiboInfo crawlWeiboInfo = new CrawlWeiboInfo(id);
+            crawlWeiboInfo.crawl();
+            crawlWeiboInfo.write();
+
+            CrawlPersonalInfo crawlPersonalInfo = new CrawlPersonalInfo(id);
+            crawlPersonalInfo.crawl();
+            crawlPersonalInfo.write();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

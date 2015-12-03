@@ -35,7 +35,9 @@ public class CrawlPersonalInfo {
      * 调用后开始抓取
      */
     public void crawl() throws IOException {
+        System.out.println("抓取博主信息...");
         crawlService.crawl();
+        System.out.println("抓取博主信息结束");
     }
 
     /**

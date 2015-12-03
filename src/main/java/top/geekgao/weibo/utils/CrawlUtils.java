@@ -114,15 +114,19 @@ public class CrawlUtils {
      */
     public static String getOid(String id)  {
         System.out.println("获取用户真实id...");
-        String html = null;
-        try {
-            html = getHtml("http://weibo.cn/" + id).split("uid=")[1].split("&")[0];
-        } catch (IOException e) {
-            System.out.println("获取用户真实id出错!");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("获取用户真实id出错!");
+        String html;
+
+        while (true) {
+            try {
+                html = getHtml("http://weibo.cn/" + id).split("uid=")[1].split("&")[0];
+                break;
+            } catch (IOException e) {
+                System.out.println("获取用户真实id出错!");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println("获取用户真实id出错!");
+            }
         }
-        System.out.println("用户真实id获取成功.");
+        System.out.println("[" + id + "]的真实id => " + html);
 
         return html;
     }

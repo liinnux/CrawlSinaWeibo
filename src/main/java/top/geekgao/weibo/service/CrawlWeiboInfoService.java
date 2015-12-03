@@ -1,14 +1,11 @@
 package top.geekgao.weibo.service;
 
-import com.thoughtworks.xstream.XStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import top.geekgao.weibo.po.Blog;
 import top.geekgao.weibo.po.Comment;
 import top.geekgao.weibo.utils.CrawlUtils;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -98,6 +95,13 @@ public class CrawlWeiboInfoService {
             JSONObject rootJson = new JSONObject(blogsJson);
             JSONArray cards = rootJson.getJSONArray("cards");
             for (Object blogJson:cards) {
+
+                int card_type = ((JSONObject)blogJson).getInt("card_type");
+                //9代表了自己的微博或者转发，还有11代表了最近点赞的微博
+                if (card_type != 9) {
+                    continue;
+                }
+
                 String itemId = ((JSONObject)blogJson).getString("itemid");
                 //此微博的id，用来获取评论，转发，赞的信息
                 String blogId = itemId.substring(itemId.lastIndexOf('_') + 1);
@@ -125,16 +129,6 @@ public class CrawlWeiboInfoService {
         }
         System.out.println("博文信息抓取完毕.");
 
-        //XStream类会自动过滤null标签
-        XStream xStream = new XStream();
-        //重命名根节点
-        xStream.alias("info",blogs.getClass());
-        String result = xStream.toXML(blogs);
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter("/home/geekgao/t.xml"));
-        writer.write(result);
-        writer.close();
-
         return blogs;
     }
 
@@ -148,10 +142,6 @@ public class CrawlWeiboInfoService {
         int pageCount = CrawlUtils.getPageCount();
         //每页blogCount条博客
         int blogCount = CrawlUtils.getBlogCount();
-        //blogCount不能为0，但是大于0时会多抓一个
-        if (blogCount > 1) {
-            blogCount--;
-        }
 
         //每次抓blogCount条，抓pageCount次
         for (int i = 1;i <= pageCount;i++) {

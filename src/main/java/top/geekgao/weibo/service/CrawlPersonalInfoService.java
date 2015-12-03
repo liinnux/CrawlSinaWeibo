@@ -1,11 +1,5 @@
 package top.geekgao.weibo.service;
 
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import top.geekgao.weibo.po.PersonalInfo;
 import top.geekgao.weibo.utils.CrawlUtils;
@@ -32,7 +26,12 @@ public class CrawlPersonalInfoService {
      */
     public void crawl() throws IOException {
         personalInfo = new PersonalInfo();
-        json = CrawlUtils.getHtml(url);
+        while (true) {
+            json = CrawlUtils.getHtml(url);
+            if (!json.contains("errmsg")) {
+                break;
+            }
+        }
         analysis();
     }
 
