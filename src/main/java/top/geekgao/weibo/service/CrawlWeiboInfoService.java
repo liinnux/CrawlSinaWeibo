@@ -5,8 +5,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import top.geekgao.weibo.po.Blog;
 import top.geekgao.weibo.po.Comment;
-import top.geekgao.weibo.po.PersonalInfo;
-import top.geekgao.weibo.po.WeiboInfo;
 import top.geekgao.weibo.utils.CrawlUtils;
 
 import java.io.BufferedWriter;
@@ -275,8 +273,43 @@ public class CrawlWeiboInfoService {
      * @param blogId 微博id
      * @return 返回此微博的评论信息
      */
-    private List<Comment> getComments(String blogId) {
+    private List<Comment> getComments(String blogId) throws IOException {
+        //存储结果集
+        List<Comment> commentList = new LinkedList<Comment>();
+        //评论的抓取个数
+        int commentCount = CrawlUtils.getCommentCount();
+        //包含评论信息的json串
+        List<String> commentJsons = new LinkedList<String>();
 
-        return null;
+        //每次获取200个，i代表页数
+        for (int i = 1; i <= commentCount / 200;i++) {
+            String json = null;
+            json = CrawlUtils.getHtml("http://api.weibo.cn/2/comments/show?trim_level=1&uicode=10000002&featurecode=10000001&lcardid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO_-_" + blogId + "&c=android&i=7db11f3&s=ec4938f8&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&lang=zh_CN&lfid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO&page=" + i + "&skin=default&trim=1&count=200&oldwm=19005_0019&luicode=10000198&with_common_cmt=1&filter_by_author=0&sflag=1");
+            if (json.contains("errmsg")) {
+                i--;
+                continue;
+            }
+            commentJsons.add(json);
+        }
+
+        for (String json:commentJsons) {
+            JSONObject rootJson = new JSONObject(json);
+            JSONArray comments  = rootJson.getJSONArray("comments");
+            //遍历每一条评论
+            for (Object comment:comments) {
+                String id = String.valueOf(((JSONObject)comment).getJSONObject("user").getInt("id"));
+                String time = ((JSONObject)comment).getString("created_at").split(" \\+")[0];
+                String content = ((JSONObject)comment).getString("text");
+
+                Comment c = new Comment();
+                c.setId(id);
+                c.setTime(time);
+                c.setContent(content);
+                //加入结果链
+                commentList.add(c);
+            }
+        }
+
+        return commentList;
     }
 }

@@ -2,6 +2,7 @@ package top.geekgao.weibo.crawl;
 
 import com.thoughtworks.xstream.XStream;
 import top.geekgao.weibo.po.Blog;
+import top.geekgao.weibo.po.Comment;
 import top.geekgao.weibo.po.PersonalInfo;
 import top.geekgao.weibo.po.WeiboInfo;
 import top.geekgao.weibo.service.CrawlWeiboInfoService;
@@ -11,6 +12,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,6 +20,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by geekgao on 15-11-30.
  * 抓取博主的博文相关信息
+ * 开放三个共有接口crawl(),write(),getWeiboInfo()
  */
 public class CrawlWeiboInfo {
     //网页url上面显示的用户的id
@@ -119,8 +122,10 @@ public class CrawlWeiboInfo {
         //重命名根节点
         xStream.alias("info",WeiboInfo.class);
         xStream.alias("blog", Blog.class);
-        String result = xStream.toXML(getWeiboInfo());
+        xStream.alias("comment", Comment.class);
+        xStream.aliasField("followings",String.class,"followingOids");
 
+        String result = xStream.toXML(getWeiboInfo());
         BufferedWriter writer = new BufferedWriter(new FileWriter(path + id + ".xml"));
         writer.write(result);
         writer.close();
