@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
  * 开放三个共有接口crawl(),write(),getWeiboInfo()
  */
 public class CrawlWeiboInfo {
-    //网页url上面显示的用户的id
+    //用户昵称
     private String id;
     //用户真实的id
     private String oid;
@@ -47,7 +47,7 @@ public class CrawlWeiboInfo {
         Runnable crawlFollowing = new Runnable() {
             public void run() {
                 try {
-                    weiboInfo.setFollowingOids(crawlService.crawlFollowingOids());
+                    weiboInfo.setFollowingOids(crawlService.crawlFollowingIds());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -57,7 +57,7 @@ public class CrawlWeiboInfo {
         Runnable crawlFollower = new Runnable() {
             public void run() {
                 try {
-                    weiboInfo.setFollowerOids(crawlService.crawlFollowerOids());
+                    weiboInfo.setFollowerOids(crawlService.crawlFollowerIds());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

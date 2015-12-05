@@ -77,9 +77,7 @@ public class CrawlPersonalInfoService {
      * @param item_content
      */
     private void setInfo(String item_name, String item_content) {
-        if (item_name.equals("id")) {
-            personalInfo.setId(item_content);
-        } else if (item_name.equals("昵称")) {
+        if (item_name.equals("昵称")) {
             personalInfo.setNickname(item_content);
         } else if (item_name.equals("性别")) {
             personalInfo.setSex(item_content);

@@ -5,6 +5,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -113,21 +115,32 @@ public class CrawlUtils {
      * 根据输入的用户id返回用户真实oid
      */
     public static String getOid(String id)  {
-        System.out.println("获取用户真实id...");
-        String html;
+        System.out.println("获取[" + id + "]的真实id...");
+        String json;
 
         while (true) {
             try {
-                html = getHtml("http://weibo.cn/" + id).split("uid=")[1].split("&")[0];
+                json = getHtml("http://s.weibo.com/ajax/topsuggest.php?key=" + id).split("try\\{window\\.&\\(")[1].split("\\);}catch")[0];
                 break;
             } catch (IOException e) {
-                System.out.println("获取用户真实id出错!");
+                System.out.println("获取[" + id + "]的真实id出错!");
             } catch (ArrayIndexOutOfBoundsException e) {
-                System.out.println("获取用户真实id出错!");
+                System.out.println("获取[" + id + "]的真实id出错!");
             }
         }
-        System.out.println("[" + id + "]的真实id => " + html);
 
-        return html;
+        JSONObject rootJson = new JSONObject(json);
+        JSONObject data = rootJson.getJSONObject("data");
+
+        JSONArray user = data.getJSONArray("user");
+        if (user.length() == 0) {
+            throw new IllegalStateException("没有找到此用户");
+        }
+
+        //第一个就是完全匹配的
+        String oid = String.valueOf(user.getJSONObject(0).getBigInteger("u_id"));
+        System.out.println("[" + id + "]的真实id => " + oid);
+
+        return oid;
     }
 }

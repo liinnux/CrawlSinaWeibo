@@ -5,7 +5,6 @@ package top.geekgao.weibo.po;
  * 个人信息类，包含个性信息的各个字段
  */
 public class PersonalInfo {
-    private String id;
     private String nickname;
     private String certified;
     private String tag;
@@ -16,11 +15,11 @@ public class PersonalInfo {
     private String level;
     private String time;
 
+
     @Override
     public String toString() {
         return "PersonalInfo{" +
-                "id='" + id + '\'' +
-                ", nickname='" + nickname + '\'' +
+                "nickname='" + nickname + '\'' +
                 ", certified='" + certified + '\'' +
                 ", tag='" + tag + '\'' +
                 ", sex='" + sex + '\'' +
@@ -30,14 +29,6 @@ public class PersonalInfo {
                 ", level='" + level + '\'' +
                 ", time='" + time + '\'' +
                 '}';
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getNickname() {
