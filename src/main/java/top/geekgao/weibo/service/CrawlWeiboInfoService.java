@@ -52,6 +52,7 @@ public class CrawlWeiboInfoService {
             JSONObject rootJson = new JSONObject(json);
             users = rootJson.getJSONArray("users");
         } catch (JSONException e) {
+            System.out.println("关注信息抓取完毕.");
             return followings;
         }
 
@@ -100,6 +101,7 @@ public class CrawlWeiboInfoService {
             JSONObject rootJson = new JSONObject(json);
             users = rootJson.getJSONArray("users");
         } catch (JSONException e) {
+            System.out.println("粉丝信息抓取完毕.");
             return followers;
         }
 
