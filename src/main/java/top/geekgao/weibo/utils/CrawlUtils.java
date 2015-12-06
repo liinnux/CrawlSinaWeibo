@@ -109,9 +109,12 @@ public class CrawlUtils {
         get.setHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
         get.setHeader("Upgrade-Insecure-Requests","1");
         CloseableHttpResponse response = client.execute(get);
-        if (response.getStatusLine().getStatusCode() == 403) {
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode == 403) {
             System.err.println("此帐号已经被暂时禁止访问,程序将退出");
             System.exit(0);
+        } else if (statusCode != 200) {
+            System.err.println("状态码是" + statusCode);
         }
 
         String result = EntityUtils.toString(response.getEntity());
