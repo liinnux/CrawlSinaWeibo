@@ -1,6 +1,5 @@
 package top.geekgao.weibo.utils;
 
-import org.apache.http.HttpHost;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -10,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.Proxy;
 import java.util.Properties;
 
 /**
@@ -20,6 +18,7 @@ import java.util.Properties;
 public class CrawlUtils {
 
     private static Properties properties = new Properties();
+    private static int requestCount = 0;
     static {
         try {
             properties.load(CrawlUtils.class.getResourceAsStream("/config.properties"));
@@ -103,6 +102,8 @@ public class CrawlUtils {
     }
 
     public static String getHtml(String url) throws IOException {
+        requestCount++;
+        System.out.println("发送第" + requestCount + "次请求");
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(url);
         get.setHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");

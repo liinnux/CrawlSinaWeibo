@@ -28,7 +28,6 @@ public class CrawlPersonalInfo {
     public CrawlPersonalInfo(String id) throws IOException {
         this.id = id;
         oid = CrawlUtils.getOid(id);
-//        crawlService = new CrawlPersonalInfoService("http://api.weibo.cn/2/cardlist?uicode=10000011&featurecode=10000001&lcardid=more_web&c=android&i=faf3db9&s=ec4938f8&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=230283" + oid + "_-_INFO&uid=1769127312&v_f=2&v_p=25&from=1056095010&gsid=_2A257XvBeDeRxGedJ7VsQ8inPyj6IHXVWSgSWrDV6PUJbrdANLVf2kWqXUOhtuyQouzVv8ATwTRBWwvO4hQ..&imsi=460017076390273&lang=zh_CN&lfid=230283" + oid + "&skin=default&count=20&oldwm=19005_0019&containerid=230283" + oid + "_-_INFO&luicode=10000198&need_head_cards=1&sflag=1");
         crawlService = new CrawlPersonalInfoService("http://api.weibo.cn/2/cardlist?uicode=10000011&featurecode=10000001&lcardid=more_web&c=android&i=faf3db9&s=654d5841&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=230283" + oid + "_-_INFO&uid=5587279865&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&imsi=460017076390273&lang=zh_CN&lfid=230283" + oid + "&skin=default&count=20&oldwm=19005_0019&containerid=230283" + oid + "_-_INFO&luicode=10000198&need_head_cards=1&sflag=1");
     }
 
