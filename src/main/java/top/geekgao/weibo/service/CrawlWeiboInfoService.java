@@ -33,9 +33,16 @@ public class CrawlWeiboInfoService {
         List<String> followings = new LinkedList<String>();
         //获得关注信息
         String json;
+        int count = 0;
         while (true) {
             json = CrawlUtils.getHtml(url);
             if (!json.contains("errmsg")) {
+                count++;
+                //超过5此尝试就不再尝试
+                if (count > 5) {
+                    System.err.println("抓取关注信息失败");
+                    return followings;
+                }
                 break;
             }
         }
@@ -66,9 +73,16 @@ public class CrawlWeiboInfoService {
         List<String> followers = new LinkedList<String>();
         //获得粉丝信息
         String json;
+        int count = 0;
         while (true) {
             json = CrawlUtils.getHtml(url);
             if (!json.contains("errmsg")) {
+                count++;
+                //超过5此尝试就不再尝试
+                if (count > 5) {
+                    System.err.println("抓取粉丝信息失败");
+                    return followers;
+                }
                 break;
             }
         }
@@ -93,10 +107,12 @@ public class CrawlWeiboInfoService {
         List<String> weiboContentJsons = getContentJsons();
         List<Blog> blogs = new LinkedList<Blog>();
         //解析每一批微博
+        int i = 0;
         for (String blogsJson:weiboContentJsons) {
             JSONObject rootJson = new JSONObject(blogsJson);
             JSONArray cards = rootJson.getJSONArray("cards");
             for (Object blogJson:cards) {
+                System.out.println(i++);
 
                 int card_type = ((JSONObject)blogJson).getInt("card_type");
                 //9代表了自己的微博或者转发，还有11代表了最近点赞的微博
@@ -109,15 +125,21 @@ public class CrawlWeiboInfoService {
                 String blogId = itemId.substring(itemId.lastIndexOf('_') + 1);
 
                 //获得微博内容
+                System.out.println("a");//todo
                 String content = getContentString((JSONObject) blogJson);
                 //获得微博发布时间
+                System.out.println("b");//todo
                 String time = getWeiboTime((JSONObject) blogJson);
                 //获得微博评论
+                System.out.println("c");//todo
                 List<Comment> comments = getComments(blogId);
                 //获得微博转发用户Oid
-                List<String> fowardings = getFowardingOids(blogId);
+                System.out.println("d");//todo
+                List<String> fowardings = getFowardingIds(blogId);
                 //获得微博赞的用户Oid
-                List<String> likes = getLikeOids(blogId);
+                System.out.println("e");//todo
+                List<String> likes = getLikeIds(blogId);
+                System.out.println("f");//todo
 
                 Blog blog = new Blog();
                 blog.setContent(content);
@@ -145,11 +167,19 @@ public class CrawlWeiboInfoService {
         //每页blogCount条博客
         int blogCount = CrawlUtils.getBlogCount();
 
+        int count = 0;
         //每次抓blogCount条，抓pageCount次
         for (int i = 1;i <= pageCount;i++) {
-//            String weiboContentJson = CrawlUtils.getHtml("http://api.weibo.cn/2/cardlist?uicode=10000198&featurecode=10000001&c=android&i=7db11f3&s=ec4938f8&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&uid=1769127312&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&imsi=460017076390273&lang=zh_CN&page=" + i + "&skin=default&count=" + blogCount + "&oldwm=19005_0019&containerid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&luicode=10000001&need_head_cards=0&sflag=1");
-            String weiboContentJson = CrawlUtils.getHtml("http://api.weibo.cn/2/cardlist?uicode=10000198&featurecode=10000001&c=android&i=faf3db9&s=654d5841&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&uid=5587279865&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&imsi=460017076390273&lang=zh_CN&page=" + i + "&skin=default&count=" + blogCount + "&oldwm=19005_0019&containerid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&luicode=10000001&need_head_cards=0&sflag=1");
+            String weiboContentJson = CrawlUtils.getHtml("http://api.weibo.cn/2/cardlist?uicode=10000198&featurecode=10000001&c=android&i=7db11f3&s=ec4938f8&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&uid=1769127312&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&imsi=460017076390273&lang=zh_CN&page=" + i + "&skin=default&count=" + blogCount + "&oldwm=19005_0019&containerid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&luicode=10000001&need_head_cards=0&sflag=1");
+//            String weiboContentJson = CrawlUtils.getHtml("http://api.weibo.cn/2/cardlist?uicode=10000198&featurecode=10000001&c=android&i=faf3db9&s=654d5841&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&uid=5587279865&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&imsi=460017076390273&lang=zh_CN&page=" + i + "&skin=default&count=" + blogCount + "&oldwm=19005_0019&containerid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&luicode=10000001&need_head_cards=0&sflag=1");
             if (weiboContentJson.contains("errmsg")) {
+                count++;
+                //超过5此尝试就不再尝试
+                if (count > 5) {
+                    System.err.println("抓取完整博文信息失败");
+                    return result;
+                }
+
                 i--;
                 continue;
             }
@@ -194,60 +224,81 @@ public class CrawlWeiboInfoService {
      * @param blogId 微博id
      * @return 返回此微博的转发人id
      */
-    private List<String> getFowardingOids(String blogId) throws IOException {
+    private List<String> getFowardingIds(String blogId) throws IOException {
         //转发用户id集合
-        List<String> fowardingOids = new LinkedList<String>();
+        List<String> fowardingIds = new LinkedList<String>();
         //需要抓取的转发量
         int forwardingCount = CrawlUtils.getForwardingCount();
         //包含转发信息的json串
         List<String> forwardingJsons = new LinkedList<String>();
 
-        //获取评论的json串
+        int count = 0;
+        //获取转发的json串
         //每次200个，i代表抓取哪一页，每页有200项转发信息
         for (int i = 1;i <= forwardingCount / 200;i++) {
 //            String json = CrawlUtils.getHtml("http://api.weibo.cn/2/statuses/repost_timeline?source=7501641714&uicode=10000002&featurecode=10000001&lcardid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO_-_" + blogId + "&c=android&i=7db11f3&s=ec4938f8&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&lang=zh_CN&lfid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO&page=" + i + "&skin=default&count=200&oldwm=19005_0019&luicode=10000198&has_member=1&sflag=1");
-            String json = CrawlUtils.getHtml("http://api.weibo.cn/2/statuses/repost_timeline?source=7501641714&uicode=10000002&lcardid=102803_-_mbloglist_" + blogId + "&c=android&i=faf3db9&s=654d5841&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&lang=zh_CN&lfid=102803&page=" + i + "&skin=default&count=20&oldwm=19005_0019&luicode=10000011&has_member=1&sflag=1");
+            String json = CrawlUtils.getHtml("http://api.weibo.cn/2/statuses/repost_timeline?source=7501641714&uicode=10000002&lcardid=102803_-_mbloglist_" + blogId + "&c=android&i=faf3db9&s=654d5841&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&lang=zh_CN&lfid=102803&page=" + i + "&skin=default&count=200&oldwm=19005_0019&luicode=10000011&has_member=1&sflag=1");
             if (json.contains("errmsg")) {
+                count++;
+                //超过5此尝试就不再尝试
+                if (count > 5) {
+                    System.err.println("抓取转发信息失败");
+                    return fowardingIds;
+                }
+
                 i--;
                 continue;
+            } else if (json.equals("{\"reposts\":null}")) {
+                return fowardingIds;
             }
             forwardingJsons.add(json);
         }
 
-        //解析每一各json
+        //解析每一个json
         for (String forwardingJson:forwardingJsons) {
             JSONObject rootJson = new JSONObject(forwardingJson);
             JSONArray reposts = rootJson.getJSONArray("reposts");
+
             for (Object repost:reposts) {
                 JSONObject user = ((JSONObject)repost).getJSONObject("user");
                 String oid = user.getString("name");
                 //加入结果链
-                fowardingOids.add(oid);
+                fowardingIds.add(oid);
             }
         }
 
-        return fowardingOids;
+        return fowardingIds;
     }
 
     /**
      * @param blogId 微博id
      * @return 返回给此微博的赞的人id
      */
-    private List<String> getLikeOids(String blogId) throws IOException {
+    private List<String> getLikeIds(String blogId) throws IOException {
         //存储点赞的人的oid
-        List<String> likeOids = new LinkedList<String>();
+        List<String> likeIds = new LinkedList<String>();
         //获取需要抓取的点赞人数
         int likeCount = CrawlUtils.getLikeCount();
         //包含点赞信息的json串
         List<String> likeJsons = new LinkedList<String>();
 
+        int count = 0;
         //每次获取200个，i代表页数
         for (int i = 1; i <= likeCount / 200;i++) {
 //            String json = CrawlUtils.getHtml("http://api.weibo.cn/2/like/show?uicode=10000002&featurecode=10000001&lcardid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO_-_" + blogId + "&c=android&i=7db11f3&s=ec4938f8&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&lang=zh_CN&lfid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO&page=" + i + "&skin=default&type=0&count=200&oldwm=19005_0019&luicode=10000198&filter_by_author=0&filter_by_source=0&sflag=1");
-            String json = CrawlUtils.getHtml("http://api.weibo.cn/2/like/show?uicode=10000002&featurecode=10000001&c=android&i=faf3db9&s=654d5841&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&lang=zh_CN&page=" + i + "&skin=default&type=0&count=50&oldwm=19005_0019&luicode=10000001&filter_by_author=0&filter_by_source=0&sflag=1");
+            String json = CrawlUtils.getHtml("http://api.weibo.cn/2/like/show?uicode=10000002&featurecode=10000001&c=android&i=faf3db9&s=654d5841&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&lang=zh_CN&page=" + i + "&skin=default&type=0&count=200&oldwm=19005_0019&luicode=10000001&filter_by_author=0&filter_by_source=0&sflag=1");
             if (json.contains("errmsg")) {
+                count++;
+                //超过5此尝试就不再尝试
+                if (count > 5) {
+                    System.err.println("抓取点赞信息失败");
+                    return likeIds;
+                }
+
                 i--;
                 continue;
+            } else if (json.equals("{\"users\":null}")) {
+                return likeIds;
             }
             likeJsons.add(json);
         }
@@ -257,11 +308,11 @@ public class CrawlWeiboInfoService {
             JSONObject rootJson = new JSONObject(likes);
             JSONArray users = rootJson.getJSONArray("users");
             for (Object user:users) {
-                likeOids.add(((JSONObject)user).getString("name"));
+                likeIds.add(((JSONObject)user).getString("name"));
             }
         }
 
-        return likeOids;
+        return likeIds;
     }
 
     /**
@@ -276,14 +327,24 @@ public class CrawlWeiboInfoService {
         //包含评论信息的json串
         List<String> commentJsons = new LinkedList<String>();
 
+        int count = 0;
         //每次获取200个，i代表页数
         for (int i = 1; i <= commentCount / 200;i++) {
-            String json = null;
+            String json;
 //            json = CrawlUtils.getHtml("http://api.weibo.cn/2/comments/show?trim_level=1&uicode=10000002&featurecode=10000001&lcardid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO_-_" + blogId + "&c=android&i=7db11f3&s=ec4938f8&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257WHTjDeRxGedJ7VsQ8inPyj6IHXVWTI8rrDV6PUJbrdAKLXjikWpnte1CBWpiSGvIiO29s2IRw7TMFw..&lang=zh_CN&lfid=1076033217179555_-_WEIBO_SECOND_PROFILE_WEIBO&page=" + i + "&skin=default&trim=1&count=200&oldwm=19005_0019&luicode=10000198&with_common_cmt=1&filter_by_author=0&sflag=1");
-            json = CrawlUtils.getHtml("http://api.weibo.cn/2/comments/show?trim_level=1&uicode=10000002&featurecode=10000001&c=android&i=faf3db9&s=654d5841&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&lang=zh_CN&page=" + blogId + "&skin=default&trim=1&count=20&oldwm=19005_0019&luicode=10000001&with_common_cmt=1&filter_by_author=0&sflag=1");
+            json = CrawlUtils.getHtml("http://api.weibo.cn/2/comments/show?trim_level=1&uicode=10000002&featurecode=10000001&c=android&i=faf3db9&s=654d5841&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&lang=zh_CN&page=" + i + "&skin=default&trim=1&count=200&oldwm=19005_0019&luicode=10000001&with_common_cmt=1&filter_by_author=0&sflag=1");
             if (json.contains("errmsg")) {
+                count++;
+                //超过5此尝试就不再尝试
+                if (count > 5) {
+                    System.err.println("抓取评论信息失败");
+                    return commentList;
+                }
+
                 i--;
                 continue;
+            } else if (json.equals("{\"comments\":null}")) {
+                return commentList;
             }
             commentJsons.add(json);
         }

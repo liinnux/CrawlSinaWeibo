@@ -1,5 +1,6 @@
 package top.geekgao.weibo.utils;
 
+import org.apache.http.HttpHost;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -9,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.Proxy;
 import java.util.Properties;
 
 /**
@@ -118,8 +120,14 @@ public class CrawlUtils {
         System.out.println("获取[" + id + "]的真实id...");
         String json;
 
+        int count = 0;
         while (true) {
             try {
+                //尝试超过5此就退出
+                if (count++ > 6) {
+                    throw new IllegalStateException("获取用户oid失败");
+                }
+
                 json = getHtml("http://s.weibo.com/ajax/topsuggest.php?key=" + id).split("try\\{window\\.&\\(")[1].split("\\);}catch")[0];
                 break;
             } catch (IOException e) {

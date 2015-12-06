@@ -26,9 +26,17 @@ public class CrawlPersonalInfoService {
      */
     public void crawl() throws IOException {
         personalInfo = new PersonalInfo();
+        int count = 0;
         while (true) {
             json = CrawlUtils.getHtml(url);
             if (!json.contains("errmsg")) {
+                count++;
+                //超过5此尝试就抛出异常
+                if (count > 5) {
+                    throw new IllegalStateException("尝试抓取用户信息超过5次自动停止.");
+                }
+
+                System.err.println("再次尝试抓取用户信息");
                 break;
             }
         }
