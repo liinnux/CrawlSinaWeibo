@@ -50,6 +50,8 @@ public class CrawlWeiboInfo {
                     weiboInfo.setFollowingOids(crawlService.crawlFollowingIds());
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         };
@@ -60,6 +62,8 @@ public class CrawlWeiboInfo {
                     weiboInfo.setFollowerOids(crawlService.crawlFollowerIds());
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         };
@@ -69,6 +73,8 @@ public class CrawlWeiboInfo {
                 try {
                     weiboInfo.setBlogs(crawlService.crawlBlog());
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
