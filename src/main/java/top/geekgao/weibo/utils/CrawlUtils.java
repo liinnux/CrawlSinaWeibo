@@ -7,6 +7,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import top.geekgao.weibo.exception.StatusErrorException;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -101,7 +102,7 @@ public class CrawlUtils {
         return Integer.valueOf(properties.getProperty("followersCount"));
     }
 
-    public static String getHtml(String url) throws IOException {
+    public static String getHtml(String url) throws IOException, StatusErrorException {
         requestCount++;
         System.out.println("发送第" + requestCount + "次请求");
         CloseableHttpClient client = HttpClients.createDefault();
@@ -111,10 +112,9 @@ public class CrawlUtils {
         CloseableHttpResponse response = client.execute(get);
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode == 403) {
-            System.err.println("此帐号已经被暂时禁止访问,程序将退出");
-            System.exit(0);
+            throw new StatusErrorException("此帐号已经被暂时禁止访问,状态码:403");
         } else if (statusCode != 200) {
-            System.err.println("状态码是" + statusCode);
+            throw new StatusErrorException("此帐号已经被暂时禁止访问,状态码:" + statusCode);
         }
 
         String result = EntityUtils.toString(response.getEntity());
@@ -143,6 +143,8 @@ public class CrawlUtils {
                 System.out.println("获取[" + id + "]的真实id出错!");
             } catch (ArrayIndexOutOfBoundsException e) {
                 System.out.println("获取[" + id + "]的真实id出错!");
+            } catch (StatusErrorException e) {
+                e.printStackTrace();
             }
         }
 

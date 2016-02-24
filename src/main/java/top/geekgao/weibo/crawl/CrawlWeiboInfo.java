@@ -129,7 +129,7 @@ public class CrawlWeiboInfo {
         xStream.alias("id", String.class);
 
         String result = xStream.toXML(getWeiboInfo());
-        BufferedWriter writer = new BufferedWriter(new FileWriter(path + id + ".xml"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path + id + System.currentTimeMillis() + ".xml"));
         writer.write(result);
         writer.close();
     }

@@ -1,6 +1,7 @@
 package top.geekgao.weibo.crawl;
 
 import com.thoughtworks.xstream.XStream;
+import top.geekgao.weibo.exception.StatusErrorException;
 import top.geekgao.weibo.po.PersonalInfo;
 import top.geekgao.weibo.service.CrawlPersonalInfoService;
 import top.geekgao.weibo.utils.CrawlUtils;
@@ -34,7 +35,7 @@ public class CrawlPersonalInfo {
     /**
      * 调用后开始抓取
      */
-    public void crawl() throws IOException {
+    public void crawl() throws IOException, StatusErrorException {
         System.out.println("抓取博主信息...");
         crawlService.crawl();
         System.out.println("抓取博主信息结束");
@@ -67,7 +68,7 @@ public class CrawlPersonalInfo {
         xStream.alias("info",PersonalInfo.class);
         String result = xStream.toXML(getPersonalInfo());
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(path + id + ".xml"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path + id + System.currentTimeMillis() + ".xml"));
         writer.write(result);
         writer.close();
     }

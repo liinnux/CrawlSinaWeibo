@@ -1,6 +1,7 @@
 package top.geekgao.weibo.service;
 
 import org.json.JSONObject;
+import top.geekgao.weibo.exception.StatusErrorException;
 import top.geekgao.weibo.po.PersonalInfo;
 import top.geekgao.weibo.utils.CrawlUtils;
 
@@ -24,7 +25,7 @@ public class CrawlPersonalInfoService {
     /**
      * 执行后立即开始抓取用户信息
      */
-    public void crawl() throws IOException {
+    public void crawl() throws IOException, StatusErrorException {
         personalInfo = new PersonalInfo();
         int count = 0;
         while (true) {
