@@ -11,6 +11,7 @@ import top.geekgao.weibo.utils.CrawlUtils;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by geekgao on 16-2-25.
@@ -21,10 +22,13 @@ public class CrawlSingleWeibo implements Runnable{
     private Blog blog;
     //本条微博的信息
     private JSONObject blogJson;
+    //执行本线程的executor
+    private ExecutorService executor;
 
-    public CrawlSingleWeibo(JSONObject blogJson,Blog blog) {
+    public CrawlSingleWeibo(JSONObject blogJson, Blog blog, ExecutorService executor) {
         this.blog = blog;
         this.blogJson = blogJson;
+        this.executor = executor;
     }
 
     public void run() {
@@ -58,17 +62,24 @@ public class CrawlSingleWeibo implements Runnable{
             comments = getComments(blogId);
             fowardings = getFowardingIds(blogId);
             likes = getLikeIds(blogId);
+
+            blog.setContent(content);
+            blog.setTime(time);
+            blog.setComments(comments);
+            blog.setFowardings(fowardings);
+            blog.setLikes(likes);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (StatusErrorException e) {
-            e.printStackTrace();
+            //避免重复关闭线程池
+            synchronized (executor) {
+                if (!executor.isShutdown()) {
+                    //一旦遇到无法继续抓取的情况，立即结束线程池
+                    executor.shutdownNow();
+                    System.err.println(e.getMessage());
+                }
+            }
         }
-
-        blog.setContent(content);
-        blog.setTime(time);
-        blog.setComments(comments);
-        blog.setFowardings(fowardings);
-        blog.setLikes(likes);
     }
 
     /**
@@ -132,7 +143,10 @@ public class CrawlSingleWeibo implements Runnable{
         //获取转发的json串
         //每次200个，i代表抓取哪一页，每页有200项转发信息
         for (int i = 1;i <= forwardingCount / 200;i++) {
+            //登陆后的账号获取的
             String json = CrawlUtils.getHtml("http://api.weibo.cn/2/statuses/repost_timeline?source=7501641714&uicode=10000002&lcardid=102803_-_mbloglist_" + blogId + "&c=android&i=faf3db9&s=654d5841&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&lang=zh_CN&lfid=102803&page=" + i + "&skin=default&count=200&oldwm=19005_0019&luicode=10000011&has_member=1&sflag=1");
+            //游客模式获取的
+//            String json = CrawlUtils.getHtml("http://api.weibo.cn/2/guest/statuses_repost_timeline?networktype=wifi&source=7501641714&uicode=10000002&checktoken=800cee2ca19e61c5041491fc68478974&featurecode=10000085&lcardid=2302833217179555_" + blogId + "&c=android&i=faf3db9&s=b84a9692&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__6.0.0__android__android5.1.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzb4Nk0i57tn_S3us9svHkMK-Cs.&did=61ccdff4c981b28ef80b9074e9c9d1429c2d950b&v_f=2&v_p=27&from=1060095010&gsid=_2AkMhkvevf8NhqwJRmPoRzWrlZYx0zg7EiebDAHrsJxI3HigX7DxnqFvTiDr5sEMqxAi0yIZRkkFkLlvc&lang=zh_CN&lfid=2302833217179555&page=" + i + "&skin=default&count=20&oldwm=9848_0009&luicode=10000198&has_member=1&sflag=1");
             if (json.contains("errmsg")) {
                 count++;
                 //超过5此尝试就不再尝试
@@ -245,7 +259,10 @@ public class CrawlSingleWeibo implements Runnable{
         //每次获取200个，i代表页数
         for (int i = 1; i <= commentCount / 200;i++) {
             String json;
+            //登陆后的账号获取的
             json = CrawlUtils.getHtml("http://api.weibo.cn/2/comments/show?trim_level=1&uicode=10000002&featurecode=10000001&c=android&i=faf3db9&s=654d5841&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&lang=zh_CN&page=" + i + "&skin=default&trim=1&count=200&oldwm=19005_0019&luicode=10000001&with_common_cmt=1&filter_by_author=0&sflag=1");
+            //游客模式获取的
+//            json = CrawlUtils.getHtml("http://api.weibo.cn/2/guest/comments_show?trim_level=1&networktype=wifi&uicode=10000002&checktoken=800cee2ca19e61c5041491fc68478974&featurecode=10000085&lcardid=2302833217179555_" + blogId + "&c=android&i=faf3db9&s=b84a9692&id=" + blogId + "&ua=Meizu-MX4%20Pro__weibo__6.0.0__android__android5.1.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzb4Nk0i57tn_S3us9svHkMK-Cs.&did=61ccdff4c981b28ef80b9074e9c9d1429c2d950b&uid=1002411791346&v_f=2&v_p=27&from=1060095010&gsid=_2AkMhkvevf8NhqwJRmPoRzWrlZYx0zg7EiebDAHrsJxI3HigX7DxnqFvTiDr5sEMqxAi0yIZRkkFkLlvc&lang=zh_CN&lfid=2302833217179555&page=" + i + "&skin=default&trim=1&count=20&oldwm=9848_0009&luicode=10000198&with_common_cmt=1&filter_by_author=0&sflag=1");
             if (json.contains("errmsg")) {
                 count++;
                 //超过5此尝试就不再尝试

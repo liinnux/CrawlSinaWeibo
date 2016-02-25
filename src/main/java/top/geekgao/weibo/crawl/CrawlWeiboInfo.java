@@ -1,6 +1,7 @@
 package top.geekgao.weibo.crawl;
 
 import com.thoughtworks.xstream.XStream;
+import top.geekgao.weibo.exception.StatusErrorException;
 import top.geekgao.weibo.po.Blog;
 import top.geekgao.weibo.po.Comment;
 import top.geekgao.weibo.po.WeiboInfo;
@@ -11,6 +12,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -28,6 +30,10 @@ public class CrawlWeiboInfo {
     private WeiboInfo weiboInfo;
     //抓取信息的服务类
     private CrawlWeiboInfoService crawlService;
+    //出现错误后对写入操作进行加锁
+    private final Object lock = new Object();
+    //标记是否已经将结果写入过
+    private boolean isWrited = false;
 
     public CrawlWeiboInfo(String id) throws IOException {
         this.id = id;
@@ -43,6 +49,9 @@ public class CrawlWeiboInfo {
         weiboInfo = new WeiboInfo();
         weiboInfo.setId(id);
 
+        //三条线程，分别执行“抓取博主关注信息”，“抓取博主粉丝信息”，“抓取博主微博信息”
+        final ExecutorService executorService = Executors.newFixedThreadPool(3);
+
         //分为3各线程个字抓取“关注”，“粉丝”，“微博内容”
         Runnable crawlFollowing = new Runnable() {
             public void run() {
@@ -50,6 +59,20 @@ public class CrawlWeiboInfo {
                     weiboInfo.setFollowingOids(crawlService.crawlFollowingIds());
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (StatusErrorException e) {
+                    System.err.println("【关注信息抓取失败.】");
+                    //因为有三条线程，所以必须加锁，防止重复将线程池关闭
+                    synchronized (lock) {
+                        if (!isWrited) {
+                            System.err.println(e.getMessage());
+                            executorService.shutdownNow();
+                            try {
+                                write();
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -62,6 +85,19 @@ public class CrawlWeiboInfo {
                     weiboInfo.setFollowerOids(crawlService.crawlFollowerIds());
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (StatusErrorException e) {
+                    System.err.println("【粉丝信息抓取失败.】");
+                    synchronized (lock) {
+                        if (!isWrited) {
+                            System.err.println(e.getMessage());
+                            executorService.shutdownNow();
+                            try {
+                                write();
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -74,23 +110,35 @@ public class CrawlWeiboInfo {
                     weiboInfo.setBlogs(crawlService.crawlBlog());
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (StatusErrorException e) {
+                    System.err.println("【博文信息抓取失败.】");
+                    synchronized (lock) {
+                        if (!isWrited) {
+                            System.err.println(e.getMessage());
+                            executorService.shutdownNow();
+                            try {
+                                write();
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         };
-
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-        executorService.submit(crawlFollowing);
-        executorService.submit(crawlFollower);
-        executorService.submit(crawlBlog);
+        executorService.execute(crawlFollowing);
+        executorService.execute(crawlFollower);
+        executorService.execute(crawlBlog);
         executorService.shutdown();
 
         //等代所有线程任务结束
         long startTime = System.currentTimeMillis();
         long lastTime = System.currentTimeMillis();
 
-        while (true) {
+        //线程池没有停止就一直计时
+        while (!executorService.isTerminated()) {
             long endTime = System.currentTimeMillis();
             //定时输出正在抓取的状态信息
             if (endTime - lastTime >= 5000) {
@@ -98,10 +146,15 @@ public class CrawlWeiboInfo {
                 lastTime = System.currentTimeMillis();
             }
 
-            if (executorService.isTerminated()) {
-                break;
-            }
             Thread.sleep(200);
+        }
+
+        try {
+            if (!isWrited) {
+                write();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return weiboInfo;
     }
@@ -110,7 +163,9 @@ public class CrawlWeiboInfo {
      * 将内容写入文件
      * 路径采取配置文件中的路径
      */
-    public void write() throws IOException {
+    private void write() throws IOException {
+        System.out.println("【信息正在写入文件.】");
+        isWrited = true;
         if (weiboInfo == null) {
             throw new IllegalStateException("您可能没有先调用crawl()方法");
         }
@@ -132,6 +187,7 @@ public class CrawlWeiboInfo {
         BufferedWriter writer = new BufferedWriter(new FileWriter(path + id + System.currentTimeMillis() + ".xml"));
         writer.write(result);
         writer.close();
+        System.out.println("【信息写入文件完毕.】");
     }
 
     /**

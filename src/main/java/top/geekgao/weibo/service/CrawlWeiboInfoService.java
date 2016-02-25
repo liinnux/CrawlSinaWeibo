@@ -135,7 +135,6 @@ public class CrawlWeiboInfoService {
         ExecutorService executor = Executors.newFixedThreadPool(10);
 
         //解析每一批微博
-        int i = 0;
         for (String blogsJson:weiboContentJsons) {
             JSONArray cards;
             try {
@@ -149,7 +148,14 @@ public class CrawlWeiboInfoService {
             for (Object blogJson:cards) {
                 Blog blog = new Blog();
                 blogs.add(blog);
-                executor.execute(new CrawlSingleWeibo((JSONObject) blogJson,blog));
+
+                //线程池没有关闭就往里面添加任务，正在执行的线程池可能会因为StatusErrorException异常而终止
+                //在这里检测出了已经关闭就是因为StatusErrorException异常而终止，所以必须退出
+                if (!executor.isShutdown()) {
+                    executor.execute(new CrawlSingleWeibo((JSONObject) blogJson,blog,executor));
+                } else {//中途关闭只可能是在线程中与到了问题将线程池关闭了
+                    return blogs;
+                }
             }
         }
         executor.shutdown();

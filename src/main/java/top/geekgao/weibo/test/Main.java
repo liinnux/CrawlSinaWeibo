@@ -31,8 +31,6 @@ public class Main {
                 e.printStackTrace();
             } catch (StatusErrorException e) {
                 e.printStackTrace();
-            } finally {
-                crawlPersonalInfo.write();
             }
 
         } else if (mode.equals("-c")) {
@@ -41,8 +39,6 @@ public class Main {
                 crawlWeiboInfo.crawl();
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            } finally {
-                crawlWeiboInfo.write();
             }
         } else {
             System.out.println("运行格式：java -jar CrawlWeibo.jar [-i/-c] [id]");

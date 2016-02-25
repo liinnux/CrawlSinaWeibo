@@ -32,7 +32,7 @@ public class CrawlPersonalInfoService {
             json = CrawlUtils.getHtml(url);
             if (!json.contains("errmsg")) {
                 count++;
-                //超过5此尝试就抛出异常
+                //超过5次尝试就抛出异常
                 if (count > 5) {
                     throw new IllegalStateException("尝试抓取用户信息超过5次自动停止.");
                 }
