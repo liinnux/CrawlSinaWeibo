@@ -56,6 +56,14 @@ public class CrawlUtils {
 
     /**
      *
+     * @return 起始抓取页数
+     */
+    public static Integer getStartPage() {
+        return Integer.valueOf(properties.getProperty("startPage"));
+    }
+
+    /**
+     *
      * @return 每页微博的个数，搭配需要抓取的页面数量使用
      */
     public static Integer getBlogCount() {

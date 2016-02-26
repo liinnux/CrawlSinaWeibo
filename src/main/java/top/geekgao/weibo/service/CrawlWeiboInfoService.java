@@ -146,13 +146,11 @@ public class CrawlWeiboInfoService {
 
             //抓取每一条微博的评论，转发，赞
             for (Object blogJson:cards) {
-                Blog blog = new Blog();
-                blogs.add(blog);
 
                 //线程池没有关闭就往里面添加任务，正在执行的线程池可能会因为StatusErrorException异常而终止
                 //在这里检测出了已经关闭就是因为StatusErrorException异常而终止，所以必须退出
                 if (!executor.isShutdown()) {
-                    executor.execute(new CrawlSingleWeibo((JSONObject) blogJson,blog,executor));
+                    executor.execute(new CrawlSingleWeibo((JSONObject) blogJson,blogs,executor));
                 } else {//中途关闭只可能是在线程中与到了问题将线程池关闭了
                     return blogs;
                 }
@@ -182,10 +180,11 @@ public class CrawlWeiboInfoService {
         //每页blogCount条博客
         int blogCount = CrawlUtils.getBlogCount();
 
+        int startPage = CrawlUtils.getStartPage();
         int count = 0;
         //每次抓blogCount条，抓pageCount次
-        for (int i = 1;i <= pageCount;i++) {
-            String weiboContentJson = CrawlUtils.getHtml("http://api.weibo.cn/2/cardlist?uicode=10000198&featurecode=10000001&c=android&i=faf3db9&s=654d5841&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&uid=5587279865&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&imsi=460017076390273&lang=zh_CN&page=" + i + "&skin=default&count=" + blogCount + "&oldwm=19005_0019&containerid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&luicode=10000001&need_head_cards=0&sflag=1");
+        for (int i = 1;i <= pageCount;i++,startPage++) {
+            String weiboContentJson = CrawlUtils.getHtml("http://api.weibo.cn/2/cardlist?uicode=10000198&featurecode=10000001&c=android&i=faf3db9&s=654d5841&ua=Meizu-MX4%20Pro__weibo__5.6.0__android__android5.0.1&wm=9848_0009&aid=01AlUdIfLWEqtqXPlIra_FKzZHJbhiihd9QgLIth8-uol6qkE.&fid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&uid=5587279865&v_f=2&v_p=25&from=1056095010&gsid=_2A257Ztc9DeTxGeNL41UT9yfEzTmIHXVWMm31rDV6PUJbrdANLWjnkWosLBnkO0GNRzzY8ucvOU-qtLNNvg..&imsi=460017076390273&lang=zh_CN&page=" + startPage + "&skin=default&count=" + blogCount + "&oldwm=19005_0019&containerid=107603" + oid + "_-_WEIBO_SECOND_PROFILE_WEIBO&luicode=10000001&need_head_cards=0&sflag=1");
             if (weiboContentJson.contains("errmsg")) {
                 count++;
                 //超过5此尝试就不再尝试
@@ -195,6 +194,7 @@ public class CrawlWeiboInfoService {
                 }
 
                 i--;
+                startPage--;
                 continue;
             }
             result.add(weiboContentJson);

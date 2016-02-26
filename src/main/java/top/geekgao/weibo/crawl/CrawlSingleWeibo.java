@@ -18,20 +18,21 @@ import java.util.concurrent.ExecutorService;
  * 抓取单挑微博的任务类
  */
 public class CrawlSingleWeibo implements Runnable{
-    //将获取到的信息放进这个对象
-    private Blog blog;
     //本条微博的信息
     private JSONObject blogJson;
     //执行本线程的executor
     private ExecutorService executor;
+    //将组装好的Blog对象放进这个list
+    private List<Blog> blogs;
 
-    public CrawlSingleWeibo(JSONObject blogJson, Blog blog, ExecutorService executor) {
-        this.blog = blog;
+    public CrawlSingleWeibo(JSONObject blogJson, List<Blog> blogs,ExecutorService executor) {
         this.blogJson = blogJson;
+        this.blogs = blogs;
         this.executor = executor;
     }
 
     public void run() {
+        Blog blog = new Blog();
         String itemId;
         try {
             int card_type = blogJson.getInt("card_type");
@@ -53,11 +54,11 @@ public class CrawlSingleWeibo implements Runnable{
         //获得微博发布时间
         String time = getWeiboTime((JSONObject) blogJson);
         //获得微博评论
-        List<Comment> comments = null;
+        List<Comment> comments;
         //获得微博转发用户Oid
-        List<String> fowardings = null;
+        List<String> fowardings;
         //获得微博赞的用户Oid
-        List<String> likes = null;
+        List<String> likes;
         try {
             comments = getComments(blogId);
             fowardings = getFowardingIds(blogId);
@@ -80,6 +81,7 @@ public class CrawlSingleWeibo implements Runnable{
                 }
             }
         }
+        blogs.add(blog);
     }
 
     /**

@@ -46,6 +46,19 @@ public class CrawlWeiboInfo {
      * 各种内容的抓取数量可以在配置文件中配置
      */
     public WeiboInfo crawl() throws InterruptedException {
+        //打印即将发送的请求次数
+        int count = 0;
+        count += CrawlUtils.getPageCount();
+        int blogCount = CrawlUtils.getPageCount() * CrawlUtils.getBlogCount();
+        count += blogCount * ((CrawlUtils.getLikeCount() + CrawlUtils.getForwardingCount() + CrawlUtils.getCommentCount()) / 200);
+        //获取粉丝和关注各一次
+        count += 2;
+        System.out.println("【即将抓取[" + id + "]的微博信息，共需抓取[" + blogCount + "]条微博，至少需要发送[" + count + "]次请求】");
+        if (count > 1000) {
+            System.err.println("每次发送请求次数不能超过1000次，否则可能会被禁止访问导致抓取失败，请修改.");
+            return null;
+        }
+
         weiboInfo = new WeiboInfo();
         weiboInfo.setId(id);
 
