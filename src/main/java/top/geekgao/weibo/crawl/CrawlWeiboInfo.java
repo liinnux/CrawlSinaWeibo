@@ -183,6 +183,16 @@ public class CrawlWeiboInfo {
             throw new IllegalStateException("您可能没有先调用crawl()方法");
         }
 
+        if (weiboInfo.getFollowingOids() == null && weiboInfo.getFollowerOids() == null && weiboInfo.getBlogs() == null) {
+            System.out.println("【没有内容，放弃写入文件.】");
+            return;
+        }
+
+        if (weiboInfo.getFollowingOids().size() == 0 && weiboInfo.getFollowerOids().size() == 0 && weiboInfo.getBlogs().size() == 0) {
+            System.out.println("【没有内容，放弃写入文件.】");
+            return;
+        }
+
         String path = CrawlUtils.getWeiboContentInfoPath();
         File pathFile = new File(path);
         //尝试创建文件夹，已经存在时不会创建
